@@ -20,6 +20,8 @@ const TaskSetupScreen = ({ onScreenChange }) => {
     setSelectedTags,
     costTags,
     setCostTags,
+    videoTags,
+    setVideoTags,
     aiEstimationPercentage,
     setAiEstimationPercentage,
     resetTaskSetup
@@ -27,6 +29,48 @@ const TaskSetupScreen = ({ onScreenChange }) => {
 
   const [showAddTags, setShowAddTags] = useState(false);
   const [isSyncActive, setIsSyncActive] = useState(false);
+  const [videoLinkInput, setVideoLinkInput] = useState('');
+  const [videoTitleInput, setVideoTitleInput] = useState('');
+  const [videoProductTagsInput, setVideoProductTagsInput] = useState('');
+
+  // Helper function to get video info from URL
+  const getVideoInfo = (url) => {
+    let type = 'Unknown';
+    let thumbnailUrl = 'https://placehold.co/120x90/607D8B/FFFFFF?text=Video';
+
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      type = 'YouTube';
+      const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+      if (videoIdMatch && videoIdMatch[1]) {
+        thumbnailUrl = `https://img.youtube.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
+      }
+    } else if (url.includes('tiktok.com')) {
+      type = 'TikTok';
+      thumbnailUrl = 'https://placehold.co/120x90/E91E63/FFFFFF?text=TikTok+Video';
+    }
+    return { type, thumbnailUrl };
+  };
+
+  const addVideoTag = () => {
+    if (videoLinkInput && videoTitleInput) {
+      const { type, thumbnailUrl } = getVideoInfo(videoLinkInput);
+      const newVideoTag = {
+        url: videoLinkInput,
+        title: videoTitleInput,
+        thumbnailUrl: thumbnailUrl,
+        platform: type,
+        tags: videoProductTagsInput.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+      };
+      setVideoTags(prev => [...prev, newVideoTag]);
+      setVideoLinkInput('');
+      setVideoTitleInput('');
+      setVideoProductTagsInput('');
+    }
+  };
+
+  const removeVideoTag = (urlToRemove) => {
+    setVideoTags(prev => prev.filter(video => video.url !== urlToRemove));
+  };
 
   const savedTasks = [
     {
@@ -34,6 +78,7 @@ const TaskSetupScreen = ({ onScreenChange }) => {
       name: 'Creative Brief Draft',
       tags: ['Plan', 'Design', 'Creative'],
       costTags: ['$2/min', '$100'],
+      videoTags: [],
       intensity: 'High',
       vibeSignature: 'Calm',
       time: '1:30'
@@ -43,6 +88,7 @@ const TaskSetupScreen = ({ onScreenChange }) => {
       name: 'Code Review Session',
       tags: ['Code', 'Review', 'Analysis'],
       costTags: ['$3/min', '$150'],
+      videoTags: [],
       intensity: 'Medium',
       vibeSignature: 'Focus',
       time: '2:00'
@@ -52,9 +98,90 @@ const TaskSetupScreen = ({ onScreenChange }) => {
       name: 'Research Phase',
       tags: ['Research', 'Analysis', 'Learning'],
       costTags: ['$1.5/min', '$80'],
+      videoTags: [],
       intensity: 'Low',
       vibeSignature: 'Calm',
       time: '0:45'
+    },
+    // New Demo Tasks with Video Links
+    {
+      id: 4,
+      name: 'Home Decor Inspiration',
+      tags: ['Design', 'Creative'],
+      costTags: ['$1/min'],
+      videoTags: [
+        {
+          url: 'https://www.youtube.com/watch?v=AOZulahHWSk',
+          title: 'Modern Home Decor Ideas',
+          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=AOZulahHWSk').thumbnailUrl,
+          tags: ['Home Decor', 'DIY', 'Interior Design'],
+          platform: 'YouTube'
+        }
+      ],
+      intensity: 'High',
+      vibeSignature: 'Energetic',
+      time: '1:15'
+    },
+    {
+      id: 5,
+      name: 'Dream Travel Planning',
+      tags: ['Plan', 'Research', 'Adventure'],
+      costTags: [],
+      videoTags: [
+        {
+          url: 'https://www.youtube.com/watch?v=kZ06nOhdr6Q',
+          title: 'Epic Travel Destinations',
+          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=kZ06nOhdr6Q').thumbnailUrl,
+          tags: ['Travel', 'Adventure', 'Vlog'],
+          platform: 'YouTube'
+        }
+      ],
+      intensity: 'Medium',
+      vibeSignature: 'Creative',
+      time: '2:30'
+    },
+    {
+      id: 6,
+      name: 'Productivity App Review',
+      tags: ['Learning', 'Tech'],
+      costTags: [],
+      videoTags: [
+        {
+          url: 'https://www.youtube.com/watch?v=aHk0dK4L_Ok',
+          title: 'Best Productivity Apps',
+          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=aHk0dK4L_Ok').thumbnailUrl,
+          tags: ['Apps', 'Productivity', 'Tech Review'],
+          platform: 'YouTube'
+        }
+      ],
+      intensity: 'Low',
+      vibeSignature: 'Focus',
+      time: '0:45'
+    },
+    {
+      id: 7,
+      name: 'Pet Playtime & Training',
+      tags: ['Pets', 'Training'],
+      costTags: [],
+      videoTags: [
+        {
+          url: 'https://www.tiktok.com/@bshtrio/video/7273262814976953643',
+          title: 'Funny Dog Feeding Habits',
+          thumbnailUrl: getVideoInfo('https://www.tiktok.com/@bshtrio/video/7273262814976953643').thumbnailUrl,
+          tags: ['Pets', 'Dog Tricks', 'Cute Animals'],
+          platform: 'TikTok'
+        },
+        {
+          url: 'https://www.tiktok.com/@krity_s/video/7278708418293108010',
+          title: 'Cat\'s Playtime Adventures',
+          thumbnailUrl: getVideoInfo('https://www.tiktok.com/@krity_s/video/7278708418293108010').thumbnailUrl,
+          tags: ['Pets', 'Cat Lovers', 'Funny'],
+          platform: 'TikTok'
+        }
+      ],
+      intensity: 'Medium',
+      vibeSignature: 'Calm',
+      time: '1:00'
     }
   ];
 
@@ -99,6 +226,7 @@ const TaskSetupScreen = ({ onScreenChange }) => {
     setTaskName(task.name);
     setSelectedTags([...task.tags]);
     setCostTags([...task.costTags]);
+    setVideoTags([...task.videoTags]);
     setVibeSignature(task.vibeSignature);
   };
 
@@ -169,8 +297,10 @@ const TaskSetupScreen = ({ onScreenChange }) => {
             onTaskSelect={handleTaskSelect}
             selectedTags={selectedTags}
             costTags={costTags}
+            videoTags={videoTags}
             onTagRemove={handleTagRemove}
             onCostTagRemove={handleCostTagRemove}
+            onVideoTagRemove={removeVideoTag}
           />
 
           {/* Add/Edit Tags Button */}
@@ -191,6 +321,15 @@ const TaskSetupScreen = ({ onScreenChange }) => {
             costTags={costTags}
             onCostTagAdd={handleCostTagAdd}
             onCostTagRemove={handleCostTagRemove}
+            videoTags={videoTags}
+            onVideoTagAdd={addVideoTag}
+            onVideoTagRemove={removeVideoTag}
+            videoLinkInput={videoLinkInput}
+            setVideoLinkInput={setVideoLinkInput}
+            videoTitleInput={videoTitleInput}
+            setVideoTitleInput={setVideoTitleInput}
+            videoProductTagsInput={videoProductTagsInput}
+            setVideoProductTagsInput={setVideoProductTagsInput}
           />
 
           {/* Start Timer Button */}

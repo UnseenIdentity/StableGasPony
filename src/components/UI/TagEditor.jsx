@@ -6,10 +6,18 @@ const TagEditor = ({
   selectedTags, 
   onTagToggle, 
   costTags, 
-  onCostTagAdd,
-  onCostTagRemove 
+  onCostTagAdd, 
+  onCostTagRemove,
+  videoTags,
+  onVideoTagAdd,
+  onVideoTagRemove,
+  videoLinkInput,
+  setVideoLinkInput,
+  videoTitleInput,
+  setVideoTitleInput,
+  videoProductTagsInput,
+  setVideoProductTagsInput
 }) => {
-  const [perMinuteInput, setPerMinuteInput] = useState('');
   const [totalCostInput, setTotalCostInput] = useState('');
 
   const availableTags = [
@@ -17,18 +25,10 @@ const TagEditor = ({
     'Meeting', 'Learning', 'Practice', 'Analysis', 'Creative'
   ];
 
-  const handleAddCostTags = () => {
-    const newCostTags = [];
-    if (perMinuteInput) {
-      newCostTags.push('$' + perMinuteInput + '/min');
-      setPerMinuteInput('');
-    }
+  const handleCostTagAdd = () => {
     if (totalCostInput) {
-      newCostTags.push('$' + totalCostInput);
+      onCostTagAdd(['$' + totalCostInput]);
       setTotalCostInput('');
-    }
-    if (newCostTags.length > 0) {
-      onCostTagAdd(newCostTags);
     }
   };
 
@@ -60,25 +60,49 @@ const TagEditor = ({
         <div className="flex gap-2">
           <input 
             type="number" 
-            value={perMinuteInput}
-            onChange={(e) => setPerMinuteInput(e.target.value)}
-            placeholder="$/min" 
-            className="px-3 py-1 text-sm bg-white/20 rounded-full text-white placeholder-white/70 w-20 focus:outline-none"
-          />
-          <input 
-            type="number" 
             value={totalCostInput}
             onChange={(e) => setTotalCostInput(e.target.value)}
             placeholder="Total $" 
-            className="px-3 py-1 text-sm bg-white/20 rounded-full text-white placeholder-white/70 w-20 focus:outline-none"
+            className="px-3 py-2 text-sm bg-white/20 rounded-xl text-white placeholder-white/70 flex-1 focus:outline-none"
           />
           <button 
-            onClick={handleAddCostTags}
-            className="px-3 py-1 text-sm bg-blue-500 rounded-full hover:bg-blue-600 transition-colors"
+            onClick={handleCostTagAdd}
+            className="px-4 py-2 text-sm bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors"
           >
             Add
           </button>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium">Video/Media Links (YouTube/TikTok)</h4>
+        <input
+          type="text"
+          value={videoLinkInput}
+          onChange={(e) => setVideoLinkInput(e.target.value)}
+          placeholder="Video URL (YouTube/TikTok)"
+          className="w-full px-3 py-2 text-sm bg-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none"
+        />
+        <input
+          type="text"
+          value={videoTitleInput}
+          onChange={(e) => setVideoTitleInput(e.target.value)}
+          placeholder="Video Title"
+          className="w-full px-3 py-2 text-sm bg-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none"
+        />
+        <input
+          type="text"
+          value={videoProductTagsInput}
+          onChange={(e) => setVideoProductTagsInput(e.target.value)}
+          placeholder="Product/Experience Tags (comma-separated)"
+          className="w-full px-3 py-2 text-sm bg-white/20 rounded-xl text-white placeholder-white/70 focus:outline-none"
+        />
+        <button
+          onClick={onVideoTagAdd}
+          className="w-full px-3 py-2 text-sm bg-purple-500 rounded-xl hover:bg-purple-600 transition-colors"
+        >
+          Add Video Link
+        </button>
       </div>
     </div>
   );

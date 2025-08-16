@@ -21,6 +21,7 @@ export const AppProvider = ({ children }) => {
   const [expectedDuration, setExpectedDuration] = useState(60);
   const [selectedTags, setSelectedTags] = useState([]);
   const [costTags, setCostTags] = useState([]);
+  const [videoTags, setVideoTags] = useState([]);
   const [aiEstimationPercentage, setAiEstimationPercentage] = useState(70);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export const AppProvider = ({ children }) => {
     setExpectedDuration(60);
     setSelectedTags([]);
     setCostTags([]);
+    setVideoTags([]);
     setAiEstimationPercentage(70);
   };
 
@@ -73,6 +75,8 @@ export const AppProvider = ({ children }) => {
     setSelectedTags,
     costTags,
     setCostTags,
+    videoTags,
+    setVideoTags,
     aiEstimationPercentage,
     setAiEstimationPercentage,
     resetTaskSetup

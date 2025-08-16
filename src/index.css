@@ -67,6 +67,29 @@
     background: rgba(255, 255, 255, 0.5);
   }
 
+  /* Video preview styling */
+  .video-preview {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .video-preview:hover {
+    transform: scale(1.02);
+  }
+
+  /* Line clamp for video titles */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Platform icon styling */
+  .platform-icon {
+    font-size: 1.2em;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  }
+
   /* Ensure content doesn't overflow on small screens */
   @media (max-width: 640px) {
     .screen {
