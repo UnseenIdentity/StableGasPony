@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS for the app */
+@layer components {
+  .screen {
+    animation: screenEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    height: 100%;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen.active {
+    @apply block;
+  }
+
+  @keyframes screenEnter {
+    from { 
+      opacity: 0; 
+      transform: translateX(20px);
+    }
+    to { 
+      opacity: 1; 
+      transform: translateX(0);
+    }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bg-conic-gradient {
+    background: conic-gradient(
+      from 0deg,
+      #4facfe 0deg,
+      #00f2fe 90deg,
+      #f093fb 180deg,
+      #4facfe 360deg
+    );
+  }
+
+  /* Custom scrollbar for saved tasks */
+  .saved-tasks-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .saved-tasks-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  .saved-tasks-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+  
+  .saved-tasks-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Ensure content doesn't overflow on small screens */
+  @media (max-width: 640px) {
+    .screen {
+      padding-left: 0.75rem !important;
+      padding-right: 0.75rem !important;
+    }
+  }
+}
