@@ -35,7 +35,10 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   const changeScreen = (screenId) => {
+    console.log('changeScreen called with:', screenId);
+    console.log('Previous screen was:', currentScreen);
     setCurrentScreen(screenId);
+    console.log('Screen changed to:', screenId);
   };
 
   const addSession = (sessionData) => {

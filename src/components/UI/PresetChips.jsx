@@ -1,9 +1,7 @@
 import React from 'react';
+import { defaultChips } from '../../data/mockData';
 
 const PresetChips = ({ selectedChips = [], onChipToggle, onAddTag }) => {
-  const defaultChips = [
-    'Morning', 'Short Burst', 'Solo Mode', 'Audio Editing', '20min', 'Deep Work'
-  ];
 
   return (
     <div className="flex flex-wrap gap-2 sm:gap-2.5 my-3 sm:my-4">

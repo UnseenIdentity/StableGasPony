@@ -1,34 +1,8 @@
 import React from 'react';
 import PrimaryButton from '../UI/PrimaryButton';
+import { insightCards, weekSchedule } from '../../data/mockData';
 
 const InsightsScreen = () => {
-  const insightCards = [
-    {
-      icon: '🎨',
-      title: 'Creative Flow',
-      desc: '3 sessions • 2.5hrs total'
-    },
-    {
-      icon: '📊',
-      title: 'Admin Loop',
-      desc: '2 sessions • 1hr total'
-    },
-    {
-      icon: '☁️',
-      title: 'Midday Drifting',
-      desc: '2 sessions • 45min total'
-    }
-  ];
-
-  const weekSchedule = [
-    { day: 'MON', tasks: ['Deep Work', 'Admin'] },
-    { day: 'TUE', tasks: ['Creative'] },
-    { day: 'WED', tasks: ['Review'] },
-    { day: 'THU', tasks: [] },
-    { day: 'FRI', tasks: [] },
-    { day: 'SAT', tasks: [] },
-    { day: 'SUN', tasks: [] }
-  ];
 
   return (
     <div className="screen p-5 pb-20">

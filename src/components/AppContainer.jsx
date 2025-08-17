@@ -10,23 +10,34 @@ import TaskSetupScreen from './Screens/TaskSetupScreen';
 import TimerScreen from './Screens/TimerScreen';
 import CompletionScreen from './Screens/CompletionScreen';
 import InsightsScreen from './Screens/InsightsScreen';
+import WalletScreen from './Screens/WalletScreen';
 
 const AppContainer = () => {
   const { currentScreen, changeScreen, isOffline } = useAppContext();
 
   const renderScreen = () => {
+    console.log('renderScreen called, currentScreen:', currentScreen);
     switch (currentScreen) {
       case 'welcome-screen':
+        console.log('Rendering WelcomeScreen');
         return <WelcomeScreen onScreenChange={changeScreen} />;
       case 'task-setup-screen':
+        console.log('Rendering TaskSetupScreen');
         return <TaskSetupScreen onScreenChange={changeScreen} />;
       case 'timer-screen':
+        console.log('Rendering TimerScreen');
         return <TimerScreen onScreenChange={changeScreen} />;
       case 'completion-screen':
+        console.log('Rendering CompletionScreen');
         return <CompletionScreen onScreenChange={changeScreen} />;
       case 'insights-screen':
+        console.log('Rendering InsightsScreen');
         return <InsightsScreen />;
+      case 'wallet-screen':
+        console.log('Rendering WalletScreen');
+        return <WalletScreen onScreenChange={changeScreen} />;
       default:
+        console.log('Rendering default WelcomeScreen');
         return <WelcomeScreen onScreenChange={changeScreen} />;
     }
   };

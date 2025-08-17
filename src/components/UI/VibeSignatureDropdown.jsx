@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
+import { vibeOptions } from '../../data/mockData';
 
 const VibeSignatureDropdown = ({ selectedVibe, onVibeSelect, isSyncActive, onSyncClick, aiEstimationPercentage }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-
-  const vibeOptions = [
-    { name: 'Calm', emoji: '😌' },
-    { name: 'Focus', emoji: '🎯' },
-    { name: 'Creative', emoji: '🎨' },
-    { name: 'Energetic', emoji: '⚡' }
-  ];
 
   const selectedVibeData = vibeOptions.find(v => v.name === selectedVibe) || vibeOptions[0];
 

@@ -39,6 +39,7 @@ const ProgressBar = ({
             background: 'linear-gradient(to right, #10B981, #14D9A5, #18E8B8)'
           }}
         >
+          {/* Children rendered within the filled progress area */}
           {children}
         </div>
         

@@ -1,30 +1,14 @@
 import React from 'react';
+import { defaultFocusBlocks, focusBlockColors } from '../../data/mockData';
 
 const FocusTimeline = ({ blocks = [], onBlockChange }) => {
-  const defaultBlocks = [
-    { id: 1, type: 'light-blue', label: 'Ease-In', sync: 3, width: '25%', left: '0%' },
-    { id: 2, type: 'green', label: 'Active Flow', sync: 7, width: '30%', left: '25%' },
-    { id: 3, type: 'orange', label: 'High Focus', sync: 5, width: '25%', left: '55%' },
-    { id: 4, type: 'red', label: 'Ultra', sync: 2, width: '20%', left: '80%' }
-  ];
 
-  const displayBlocks = blocks.length > 0 ? blocks : defaultBlocks;
+  const displayBlocks = blocks.length > 0 ? blocks : defaultFocusBlocks;
 
   const getBlockClasses = (type) => {
     const baseClasses = 'absolute h-full rounded-[12px] sm:rounded-[15px] flex flex-col items-center justify-center text-[10px] sm:text-[11px] font-semibold cursor-move transition-all duration-300 shadow-[0_3px_12px_rgba(0,0,0,0.3)] hover:scale-y-110 hover:brightness-110 hover:z-10 hover:shadow-[0_5px_18px_rgba(0,0,0,0.4),0_0_30px_currentColor]';
     
-    switch (type) {
-      case 'light-blue':
-        return `${baseClasses} bg-gradient-to-br from-[#4facfe] to-[#00f2fe] text-white`;
-      case 'green':
-        return `${baseClasses} bg-gradient-to-br from-[#43e97b] to-[#38f9d7] text-white`;
-      case 'orange':
-        return `${baseClasses} bg-gradient-to-br from-[#fa709a] to-[#fee140] text-white`;
-      case 'red':
-        return `${baseClasses} bg-gradient-to-br from-[#f83600] to-[#fe8c00] text-white`;
-      default:
-        return baseClasses;
-    }
+    return `${baseClasses} ${focusBlockColors[type] || baseClasses}`;
   };
 
   return (

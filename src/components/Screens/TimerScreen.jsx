@@ -259,14 +259,16 @@ const TimerScreen = ({ onScreenChange }) => {
                 cursorPosition={Math.min(((expectedDuration * 60 - timeRemaining) / (expectedDuration * 60)) * 100, 100)}
               >
                 {/* Vibe tag - positioned within the filled progress area */}
-                <div className="absolute right-2 top-0 h-full flex items-center">
-                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <span className="text-xs font-medium flex items-center gap-1 text-white">
-                      <span className="text-base">{getVibeEmoji()}</span>
-                      <span>{vibeSignature}</span>
-                    </span>
+                {(aiEstimationPercentage || 70) > 10 && (
+                  <div className="absolute inset-0 flex items-center justify-end pr-2">
+                    <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                      <span className="text-xs font-medium flex items-center gap-1 text-white">
+                        <span className="text-base">{getVibeEmoji()}</span>
+                        <span>{vibeSignature}</span>
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </ProgressBar>
             </div>
           </div>

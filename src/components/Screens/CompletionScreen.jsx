@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppContext } from '../../context/AppContext';
 import PrimaryButton from '../UI/PrimaryButton';
 import FocusTimeline from '../UI/FocusTimeline';
+import { completionStats as defaultCompletionStats, actionStreaks } from '../../data/mockData';
 
 const CompletionScreen = ({ onScreenChange }) => {
   const { 
@@ -13,27 +14,13 @@ const CompletionScreen = ({ onScreenChange }) => {
     addSession 
   } = useAppContext();
 
-  const completionStats = [
-    { label: 'Total Time Focused:', value: '37 min', isLarge: true },
-    { label: 'Time Earned:', value: '+4.2 Presence Tokens' },
-    { label: 'Sync Rating:', value: 'High Resonance (8 users)' },
-    { label: 'Vibe Signature:', value: vibeSignature }
-  ];
-
-  const actionStreaks = [
-    { type: 'light-blue', label: '5m', width: '15%', left: '0%' },
-    { type: 'green', label: '15m', width: '40%', left: '15%' },
-    { type: 'orange', label: '12m', width: '30%', left: '55%' },
-    { type: 'red', label: '5m', width: '15%', left: '85%' }
-  ];
+  // Use default completion stats but override vibe signature with current one
+  const completionStats = defaultCompletionStats.map(stat => 
+    stat.label === 'Vibe Signature:' ? { ...stat, value: vibeSignature } : stat
+  );
 
   const getVibeEmoji = () => {
-    const vibeEmojis = {
-      'Calm': '😌',
-      'Focus': '🎯',
-      'Creative': '🎨',
-      'Energetic': '⚡'
-    };
+    const { vibeEmojis } = require('../../data/mockData');
     return vibeEmojis[vibeSignature] || '😌';
   };
 

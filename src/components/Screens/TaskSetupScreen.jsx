@@ -7,6 +7,7 @@ import DurationSlider from '../UI/DurationSlider';
 import AIEstimationBar from '../UI/AIEstimationBar';
 import SavedTasksList from '../UI/SavedTasksList';
 import TagEditor from '../UI/TagEditor';
+import { getVideoInfo, savedTasks, vibeEmojis } from '../../data/mockData';
 
 const TaskSetupScreen = ({ onScreenChange }) => {
   const {
@@ -33,24 +34,6 @@ const TaskSetupScreen = ({ onScreenChange }) => {
   const [videoTitleInput, setVideoTitleInput] = useState('');
   const [videoProductTagsInput, setVideoProductTagsInput] = useState('');
 
-  // Helper function to get video info from URL
-  const getVideoInfo = (url) => {
-    let type = 'Unknown';
-    let thumbnailUrl = 'https://placehold.co/120x90/607D8B/FFFFFF?text=Video';
-
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      type = 'YouTube';
-      const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
-      if (videoIdMatch && videoIdMatch[1]) {
-        thumbnailUrl = `https://img.youtube.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
-      }
-    } else if (url.includes('tiktok.com')) {
-      type = 'TikTok';
-      thumbnailUrl = 'https://placehold.co/120x90/E91E63/FFFFFF?text=TikTok+Video';
-    }
-    return { type, thumbnailUrl };
-  };
-
   const addVideoTag = () => {
     if (videoLinkInput && videoTitleInput) {
       const { type, thumbnailUrl } = getVideoInfo(videoLinkInput);
@@ -71,119 +54,6 @@ const TaskSetupScreen = ({ onScreenChange }) => {
   const removeVideoTag = (urlToRemove) => {
     setVideoTags(prev => prev.filter(video => video.url !== urlToRemove));
   };
-
-  const savedTasks = [
-    {
-      id: 1,
-      name: 'Creative Brief Draft',
-      tags: ['Plan', 'Design', 'Creative'],
-      costTags: ['$2/min', '$100'],
-      videoTags: [],
-      intensity: 'High',
-      vibeSignature: 'Calm',
-      time: '1:30'
-    },
-    {
-      id: 2,
-      name: 'Code Review Session',
-      tags: ['Code', 'Review', 'Analysis'],
-      costTags: ['$3/min', '$150'],
-      videoTags: [],
-      intensity: 'Medium',
-      vibeSignature: 'Focus',
-      time: '2:00'
-    },
-    {
-      id: 3,
-      name: 'Research Phase',
-      tags: ['Research', 'Analysis', 'Learning'],
-      costTags: ['$1.5/min', '$80'],
-      videoTags: [],
-      intensity: 'Low',
-      vibeSignature: 'Calm',
-      time: '0:45'
-    },
-    // New Demo Tasks with Video Links
-    {
-      id: 4,
-      name: 'Home Decor Inspiration',
-      tags: ['Design', 'Creative'],
-      costTags: ['$1/min'],
-      videoTags: [
-        {
-          url: 'https://www.youtube.com/watch?v=AOZulahHWSk',
-          title: 'Modern Home Decor Ideas',
-          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=AOZulahHWSk').thumbnailUrl,
-          tags: ['Home Decor', 'DIY', 'Interior Design'],
-          platform: 'YouTube'
-        }
-      ],
-      intensity: 'High',
-      vibeSignature: 'Energetic',
-      time: '1:15'
-    },
-    {
-      id: 5,
-      name: 'Dream Travel Planning',
-      tags: ['Plan', 'Research', 'Adventure'],
-      costTags: [],
-      videoTags: [
-        {
-          url: 'https://www.youtube.com/watch?v=kZ06nOhdr6Q',
-          title: 'Epic Travel Destinations',
-          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=kZ06nOhdr6Q').thumbnailUrl,
-          tags: ['Travel', 'Adventure', 'Vlog'],
-          platform: 'YouTube'
-        }
-      ],
-      intensity: 'Medium',
-      vibeSignature: 'Creative',
-      time: '2:30'
-    },
-    {
-      id: 6,
-      name: 'Productivity App Review',
-      tags: ['Learning', 'Tech'],
-      costTags: [],
-      videoTags: [
-        {
-          url: 'https://www.youtube.com/watch?v=aHk0dK4L_Ok',
-          title: 'Best Productivity Apps',
-          thumbnailUrl: getVideoInfo('https://www.youtube.com/watch?v=aHk0dK4L_Ok').thumbnailUrl,
-          tags: ['Apps', 'Productivity', 'Tech Review'],
-          platform: 'YouTube'
-        }
-      ],
-      intensity: 'Low',
-      vibeSignature: 'Focus',
-      time: '0:45'
-    },
-    {
-      id: 7,
-      name: 'Pet Playtime & Training',
-      tags: ['Pets', 'Training'],
-      costTags: [],
-      videoTags: [
-        {
-          url: 'https://www.tiktok.com/@bshtrio/video/7273262814976953643',
-          title: 'Funny Dog Feeding Habits',
-          thumbnailUrl: getVideoInfo('https://www.tiktok.com/@bshtrio/video/7273262814976953643').thumbnailUrl,
-          tags: ['Pets', 'Dog Tricks', 'Cute Animals'],
-          platform: 'TikTok'
-        },
-        {
-          url: 'https://www.tiktok.com/@krity_s/video/7278708418293108010',
-          title: 'Cat\'s Playtime Adventures',
-          thumbnailUrl: getVideoInfo('https://www.tiktok.com/@krity_s/video/7278708418293108010').thumbnailUrl,
-          tags: ['Pets', 'Cat Lovers', 'Funny'],
-          platform: 'TikTok'
-        }
-      ],
-      intensity: 'Medium',
-      vibeSignature: 'Calm',
-      time: '1:00'
-    }
-  ];
 
   const handleVibeSelect = (vibe) => {
     setVibeSignature(vibe);
@@ -230,19 +100,13 @@ const TaskSetupScreen = ({ onScreenChange }) => {
     setVibeSignature(task.vibeSignature);
   };
 
-  const handleStartTimer = () => {
+  const handleStartGrouping = () => {
     if (taskName) {
-      onScreenChange('timer-screen');
+      onScreenChange('wallet-screen');
     }
   };
 
   const getVibeEmoji = () => {
-    const vibeEmojis = {
-      'Calm': '😌',
-      'Focus': '🎯',
-      'Creative': '🎨',
-      'Energetic': '⚡'
-    };
     return vibeEmojis[vibeSignature] || '😌';
   };
 
@@ -332,9 +196,9 @@ const TaskSetupScreen = ({ onScreenChange }) => {
             setVideoProductTagsInput={setVideoProductTagsInput}
           />
 
-          {/* Start Timer Button */}
+          {/* Start Grouping Button */}
           <button
-            onClick={handleStartTimer}
+            onClick={handleStartGrouping}
             disabled={!taskName}
             className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all ${
               taskName 
@@ -342,8 +206,8 @@ const TaskSetupScreen = ({ onScreenChange }) => {
                 : 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
             }`}
           >
-            {taskName ? '▶️' : '⏸️'}
-            {taskName ? 'Start Timer' : 'Enter Task Name'}
+            {taskName ? '🚀' : '⏸️'}
+            {taskName ? 'Start Grouping' : 'Enter Task Name'}
           </button>
         </div>
       </div>

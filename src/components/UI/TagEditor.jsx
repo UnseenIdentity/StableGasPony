@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { availableTags } from '../../data/mockData';
 
 const TagEditor = ({ 
   showAddTags, 
@@ -19,11 +20,6 @@ const TagEditor = ({
   setVideoProductTagsInput
 }) => {
   const [totalCostInput, setTotalCostInput] = useState('');
-
-  const availableTags = [
-    'Plan', 'Code', 'Test', 'Review', 'Design', 'Research', 'Write', 
-    'Meeting', 'Learning', 'Practice', 'Analysis', 'Creative'
-  ];
 
   const handleCostTagAdd = () => {
     if (totalCostInput) {
