@@ -342,8 +342,8 @@ const TaskSetupScreen = ({ onScreenChange }) => {
                 : 'bg-gray-500/50 text-gray-300 cursor-not-allowed'
             }`}
           >
-            ▶️
-            Start Timer
+            {taskName ? '▶️' : '⏸️'}
+            {taskName ? 'Start Timer' : 'Enter Task Name'}
           </button>
         </div>
       </div>

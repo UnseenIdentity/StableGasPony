@@ -1,19 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import FocusTimeline from '../UI/FocusTimeline';
+import ProgressBar from '../UI/ProgressBar';
 
 const TimerScreen = ({ onScreenChange }) => {
-  const { taskName, vibeSignature, selectedTags, costTags } = useAppContext();
-  const [seconds, setSeconds] = useState(0);
+  const { taskName, vibeSignature, selectedTags, costTags, expectedDuration, aiEstimationPercentage } = useAppContext();
+  const [timeRemaining, setTimeRemaining] = useState((expectedDuration || 60) * 60); // Convert minutes to seconds, default to 60 if undefined
   const [isRunning, setIsRunning] = useState(false);
   const [currentFocusIntensity, setCurrentFocusIntensity] = useState('light-blue');
-  const [notes, setNotes] = useState('');
+
   const timerIntervalRef = useRef(null);
+
+  // Auto-start timer when component first mounts
+  useEffect(() => {
+    if (expectedDuration && !isRunning && timeRemaining === (expectedDuration || 60) * 60) {
+      console.log('Auto-starting timer on mount with duration:', expectedDuration, 'minutes');
+      setIsRunning(true);
+    }
+  }, []); // Empty dependency array - runs only once on mount
+
+  // Reset timer when expectedDuration changes
+  useEffect(() => {
+    if (expectedDuration) {
+      console.log('Resetting timer to:', expectedDuration, 'minutes'); // Debug log
+      setTimeRemaining(expectedDuration * 60);
+    }
+  }, [expectedDuration]);
 
   useEffect(() => {
     if (isRunning) {
       timerIntervalRef.current = setInterval(() => {
-        setSeconds(prev => prev + 1);
+        setTimeRemaining(prev => {
+          console.log('Timer tick:', prev, '->', prev - 1); // Debug log
+          if (prev <= 1) {
+            // Timer finished
+            setIsRunning(false);
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     } else {
       clearInterval(timerIntervalRef.current);
@@ -22,26 +48,45 @@ const TimerScreen = ({ onScreenChange }) => {
     return () => clearInterval(timerIntervalRef.current);
   }, [isRunning]);
 
+  // Handle timer completion
   useEffect(() => {
-    // Change intensity based on time
-    if (seconds < 300) {
+    if (timeRemaining <= 0 && isRunning === false) {
+      // Timer has finished, navigate to completion screen
+      setTimeout(() => {
+        onScreenChange('completion-screen');
+      }, 1000); // Small delay to show "00:00" briefly
+    }
+  }, [timeRemaining, isRunning, onScreenChange]);
+
+  useEffect(() => {
+    // Change intensity based on remaining time
+    const remainingMinutes = timeRemaining / 60;
+    if (remainingMinutes > expectedDuration * 0.75) {
       setCurrentFocusIntensity('light-blue');
-    } else if (seconds < 900) {
+    } else if (remainingMinutes > expectedDuration * 0.5) {
       setCurrentFocusIntensity('green');
-    } else if (seconds < 1500) {
+    } else if (remainingMinutes > expectedDuration * 0.25) {
       setCurrentFocusIntensity('orange');
     } else {
       setCurrentFocusIntensity('red');
     }
-  }, [seconds]);
+  }, [timeRemaining, expectedDuration]);
 
   const formatTime = (totalSeconds) => {
+    if (totalSeconds <= 0) return '00:00';
     const minutes = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const startTimer = () => {
+    // Only reset timer if it's at 0 or hasn't been started yet
+    if (timeRemaining <= 0) {
+      console.log('Starting fresh timer with duration:', expectedDuration, 'minutes'); // Debug log
+      setTimeRemaining(expectedDuration * 60);
+    } else {
+      console.log('Resuming timer from:', timeRemaining, 'seconds remaining'); // Debug log
+    }
     setIsRunning(true);
   };
 
@@ -57,13 +102,22 @@ const TimerScreen = ({ onScreenChange }) => {
   };
 
   const skipToNext = () => {
-    // Skip to next focus block
-    const newSeconds = Math.ceil(seconds / 300) * 300;
-    setSeconds(newSeconds);
+    // Skip to next focus block (reduce remaining time by 5 minutes)
+    const newTimeRemaining = Math.max(timeRemaining - 300, 0);
+    setTimeRemaining(newTimeRemaining);
     if (navigator.vibrate) navigator.vibrate(30);
   };
 
+  const resetTimer = () => {
+    // Reset timer to full duration
+    console.log('Resetting timer to full duration:', expectedDuration, 'minutes');
+    setTimeRemaining(expectedDuration * 60);
+    setIsRunning(false);
+  };
+
   const getIntensityLabel = () => {
+    if (timeRemaining <= 0) return 'Session Complete!';
+    
     switch (currentFocusIntensity) {
       case 'light-blue': return 'Ease-In Mode';
       case 'green': return 'Flow Mode';
@@ -97,17 +151,49 @@ const TimerScreen = ({ onScreenChange }) => {
         <div className="text-center py-6 sm:py-8 w-full">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl font-bold mb-2">{taskName || 'Focus Session'}</h1>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full mb-2">
               <span className="text-lg">{getVibeEmoji()}</span>
               <span className="font-medium">{vibeSignature}</span>
             </div>
+            <div className="text-sm text-white/70">
+              Duration: {expectedDuration} minutes
+            </div>
+            {isRunning && (
+              <div className="text-xs text-green-400 mt-1 animate-pulse">
+                ⏰ Timer is running...
+              </div>
+            )}
+            {!isRunning && timeRemaining > 0 && timeRemaining < (expectedDuration * 60) && (
+              <div className="text-xs text-blue-400 mt-1">
+                ⏸️ Timer paused - click ▶️ to resume from {formatTime(timeRemaining)}
+              </div>
+            )}
+            {!isRunning && timeRemaining === (expectedDuration * 60) && (
+              <div className="text-xs text-yellow-400 mt-1">
+                ⏸️ Timer ready - click ▶️ to start
+              </div>
+            )}
+            {/* Debug info - remove this later */}
+            <div className="text-xs text-white/50 mt-1">
+              Debug: isRunning={isRunning.toString()}, timeRemaining={timeRemaining}s
+            </div>
           </div>
 
-          <div className="w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] mx-auto mb-6 sm:mb-8 relative">
-            <div className="w-full h-full rounded-full bg-conic-gradient from-[#4facfe] via-[#00f2fe] via-[#f093fb] to-[#4facfe] p-2 animate-spin shadow-[0_0_40px_rgba(79,172,254,0.5),inset_0_0_40px_rgba(79,172,254,0.2)] sm:shadow-[0_0_60px_rgba(79,172,254,0.5),inset_0_0_60px_rgba(79,172,254,0.2)]" style={{ animationDuration: '20s' }}>
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0a0e27] to-[#151933] flex items-center justify-center flex-col shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] sm:shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]">
-                <div className="text-[40px] sm:text-[56px] font-extralight font-mono tracking-wider text-white drop-shadow-[0_0_15px_rgba(79,172,254,0.5)] sm:drop-shadow-[0_0_20px_rgba(79,172,254,0.5)]">
-                  {formatTime(seconds)}
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="relative w-[220px] h-[220px] sm:w-[280px] sm:h-[280px]">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.2)" strokeWidth="8" />
+                <circle
+                  cx="50" cy="50" r="40" fill="transparent"
+                  stroke="#10B981"
+                  strokeWidth="8"
+                  strokeDasharray={`${Math.min(((expectedDuration * 60 - timeRemaining) / (expectedDuration * 60)) * 100, 100) * 2.51} 251`}
+                  className="transition-all duration-1000"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-[40px] sm:text-[56px] font-mono font-bold text-white drop-shadow-[0_0_15px_rgba(79,172,254,0.5)] sm:drop-shadow-[0_0_20px_rgba(79,172,254,0.5)]">
+                  {formatTime(timeRemaining)}
                 </div>
                 <div className="text-white/60 text-xs sm:text-sm mt-2 sm:mt-2.5 uppercase tracking-wider">
                   {getIntensityLabel()}
@@ -118,23 +204,34 @@ const TimerScreen = ({ onScreenChange }) => {
 
           <div className="flex justify-center gap-4 sm:gap-6 my-6 sm:my-8">
             <button
-              className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full bg-white/5 border-2 border-[rgba(79,172,254,0.3)] text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:bg-[rgba(79,172,254,0.2)] hover:scale-110 hover:shadow-[0_0_25px_rgba(79,172,254,0.5)] active:scale-95"
+              className={`w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full border-2 text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:scale-110 hover:shadow-[0_0_25px_rgba(79,172,254,0.5)] active:scale-95 ${
+                isRunning 
+                  ? 'bg-yellow-500/20 border-yellow-400/50 hover:bg-yellow-500/30' 
+                  : 'bg-white/5 border-[rgba(79,172,254,0.3)] hover:bg-[rgba(79,172,254,0.2)]'
+              }`}
               onClick={isRunning ? pauseTimer : startTimer}
+              title={isRunning ? 'Pause Timer' : timeRemaining < (expectedDuration * 60) ? 'Resume Timer' : 'Start Timer'}
             >
               {isRunning ? '⏸' : '▶️'}
             </button>
             <button
               className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full bg-white/5 border-2 border-[rgba(79,172,254,0.3)] text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:bg-[rgba(79,172,254,0.2)] hover:scale-110 hover:shadow-[0_0_25px_rgba(79,172,254,0.5)] active:scale-95"
               onClick={stopTimer}
+              title="Stop Timer & Complete Session"
             >
               ⏹
             </button>
-            <button className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full bg-white/5 border-2 border-[rgba(79,172,254,0.3)] text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:bg-[rgba(79,172,254,0.2)] hover:scale-110 hover:shadow-[0_0_25px_rgba(79,172,254,0.5)] active:scale-95">
-              📝
+            <button 
+              className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full bg-orange-500/20 border-2 border-orange-400/50 text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:bg-orange-500/30 hover:scale-110 hover:shadow-[0_0_25px_rgba(255,165,0,0.5)] active:scale-95"
+              onClick={resetTimer}
+              title="Reset Timer to Full Duration"
+            >
+              🔄
             </button>
             <button
               className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] rounded-full bg-gradient-to-br from-[rgba(79,172,254,0.2)] to-[rgba(240,147,251,0.2)] border-2 border-[rgba(79,172,254,0.3)] text-white text-2xl sm:text-[28px] cursor-pointer transition-all duration-300 flex items-center justify-center backdrop-blur-[10px] hover:bg-[rgba(79,172,254,0.2)] hover:scale-110 hover:shadow-[0_0_25px_rgba(79,172,254,0.5)] active:scale-95"
               onClick={skipToNext}
+              title="Skip Ahead 5 Minutes"
             >
               ⏭
             </button>
@@ -145,92 +242,55 @@ const TimerScreen = ({ onScreenChange }) => {
             <FocusTimeline blocks={liveBlocks} />
           </div>
 
-          {/* Session Progress with Tags */}
+          {/* Session Progress with AI Estimation */}
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-3">
               <span className="font-medium">Session Progress</span>
-              <span className="text-sm opacity-80">{Math.floor(seconds / 60)}/{Math.floor(seconds / 60)} min</span>
+              <span className="text-sm opacity-80">{Math.floor((expectedDuration * 60 - timeRemaining) / 60)}/{expectedDuration} min</span>
             </div>
             
-            <div className="relative h-12 rounded-lg overflow-hidden"
-                 style={{ background: 'linear-gradient(to right, rgba(16, 185, 129, 0.3), rgba(20, 217, 165, 0.4), rgba(24, 232, 184, 0.5))' }}>
-              <div 
-                className="absolute left-0 top-0 h-full transition-all duration-1000 rounded-lg"
-                style={{ 
-                  width: `${Math.min((seconds / (60 * 60)) * 100, 100)}%`,
-                  background: 'linear-gradient(to right, #10B981, #14D9A5, #18E8B8)'
-                }}
-              ></div>
-              
-              <div className="absolute inset-0 flex items-center px-3">
-                <span className="text-sm font-medium">
-                  {getVibeEmoji()} {vibeSignature} Focus
-                </span>
-              </div>
+            <div className="relative">
+              {/* AI Estimation Background Bar */}
+              <ProgressBar
+                progressPercentage={aiEstimationPercentage || 70}
+                expectedDuration={expectedDuration}
+                height="48px"
+                showCursor={true}
+                cursorPosition={Math.min(((expectedDuration * 60 - timeRemaining) / (expectedDuration * 60)) * 100, 100)}
+              >
+                {/* Vibe tag - positioned within the filled progress area */}
+                <div className="absolute right-2 top-0 h-full flex items-center">
+                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <span className="text-xs font-medium flex items-center gap-1 text-white">
+                      <span className="text-base">{getVibeEmoji()}</span>
+                      <span>{vibeSignature}</span>
+                    </span>
+                  </div>
+                </div>
+              </ProgressBar>
             </div>
-            
-            {(selectedTags.length > 0 || costTags.length > 0) && (
-              <div className="flex flex-wrap gap-2 mt-3">
+          </div>
+
+
+
+          {/* Selected Tags Display */}
+          {(selectedTags.length > 0 || costTags.length > 0) && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <h3 className="text-sm font-medium mb-3 opacity-90 text-center">Session Tags</h3>
+              <div className="flex flex-wrap gap-2 justify-center">
                 {selectedTags.map(tag => (
-                  <span key={tag} className="text-xs px-2 py-1 bg-white/20 rounded">
+                  <span key={tag} className="px-3 py-2 bg-white/20 rounded-full text-sm text-white border border-white/30">
                     {tag}
                   </span>
                 ))}
                 {costTags.map(tag => (
-                  <span key={tag} className="text-xs px-2 py-1 bg-blue-500/80 text-white rounded font-medium">
+                  <span key={tag} className="px-3 py-2 bg-blue-500/80 text-white rounded-full text-sm font-medium border border-blue-400/50">
                     {tag}
                   </span>
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Sync Panel */}
-          <div className="bg-gradient-to-br from-[rgba(79,172,254,0.05)] to-[rgba(240,147,251,0.05)] border border-[rgba(79,172,254,0.3)] rounded-[20px] sm:rounded-[25px] p-4 sm:p-6 my-4 sm:my-5 relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">🌐 Attention Resonance Map</h3>
-              <p className="text-xs sm:text-sm text-white/70 mb-3 sm:mb-4">
-                You're in sync with 6 users in this focus mode
-              </p>
-              <div className="flex gap-[-15px] my-4 sm:my-5">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] rounded-full bg-gradient-to-br from-[#4facfe] to-[#f093fb] flex items-center justify-center text-lg sm:text-xl border-[2px] sm:border-[3px] border-[#0a0e27] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-110 hover:z-10 animate-pulse"
-                    style={{ marginLeft: i === 0 ? 0 : '-15px' }}
-                  >
-                    👤
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2 sm:gap-2.5 mt-4 sm:mt-5">
-                <button className="flex-1 py-2.5 sm:py-3 px-2.5 sm:px-3 bg-white/5 border border-[rgba(79,172,254,0.3)] rounded-[12px] sm:rounded-[15px] text-white text-[10px] sm:text-xs cursor-pointer transition-all duration-300 hover:bg-[rgba(79,172,254,0.2)] hover:-translate-y-0.5">
-                  🔁 Sync Wallet
-                </button>
-                <button className="flex-1 py-2.5 sm:py-3 px-2.5 sm:px-3 bg-white/5 border border-[rgba(79,172,254,0.3)] rounded-[12px] sm:rounded-[15px] text-white text-[10px] sm:text-xs cursor-pointer transition-all duration-300 hover:bg-[rgba(79,172,254,0.2)] hover:-translate-y-0.5">
-                  🤝 Invite to Room
-                </button>
-                <button className="flex-1 py-2.5 sm:py-3 px-2.5 sm:px-3 bg-white/5 border border-[rgba(79,172,254,0.3)] rounded-[12px] sm:rounded-[15px] text-white text-[10px] sm:text-xs cursor-pointer transition-all duration-300 hover:bg-[rgba(79,172,254,0.2)] hover:-translate-y-0.5">
-                  👥 Join Pool
-                </button>
-              </div>
-              <button className="w-full py-2.5 sm:py-3 px-2.5 sm:px-3 bg-white/5 border border-[rgba(79,172,254,0.3)] rounded-[12px] sm:rounded-[15px] text-white text-[10px] sm:text-xs cursor-pointer transition-all duration-300 hover:bg-[rgba(79,172,254,0.2)] hover:-translate-y-0.5 mt-2 sm:mt-2.5">
-                📜 View Resonance History
-              </button>
             </div>
-          </div>
-
-          {/* Quick Notes */}
-          <div>
-            <label className="block text-sm font-medium mb-2 opacity-90">Quick Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add notes during your session..."
-              className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/70 resize-none focus:outline-none focus:border-white/50"
-              rows="3"
-            ></textarea>
-          </div>
+          )}
         </div>
       </div>
     </div>
